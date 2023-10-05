@@ -1,0 +1,63 @@
+server {
+    listen       80;
+
+    charset utf-8;
+
+    root   /var/www/public;
+    index  index.php;
+
+    rewrite ^/(.*)/$ /$1 permanent;
+
+    location / {
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt { access_log off; log_not_found off; }
+
+    #access_log off;
+    access_log /home/www/var/log/nginx.log;
+    error_log  /home/www/var/log/nginx-error.log error;
+
+    location ~ \.php$ {
+        try_files $uri /index.php =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+
+        #https://github.com/zendtech/ZendOptimizerPlus/issues/126
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+
+        include fastcgi_params;
+        fastcgi_intercept_errors off;
+        fastcgi_buffers 16 256k;
+        fastcgi_buffer_size 128k;
+        fastcgi_busy_buffers_size 256k;
+        internal;
+    }
+
+    location ~ (/\.|web\.config) {
+        deny all;
+
+        access_log off;
+        log_not_found off;
+    }
+
+#    # specjalne ustawienia dla testu Google PageSpeed, ustawić TYLKO jeżeli jest na to konkretne zlecenie
+#    location ~* \.(?:jpg|gif|png|ico|cur|svg|svgz)$ {
+#        expires 7d;
+#        add_header Cache-Control "public";
+#    }
+
+#    # cache dla plików statycznych, tylko gdy serwis NIE korzysta z dedykowanego serwera Cache/CDN
+#    location ^~ /var/cache {
+#        expires 14d;
+#        add_header Cache-Control "public";
+#    }
+#    location ~* \.(?:css|js|ttf|woff|woff2)$ {
+#        expires 31d;
+#        add_header Cache-Control "public";
+#    }
+}

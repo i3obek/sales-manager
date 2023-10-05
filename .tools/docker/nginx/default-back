@@ -1,0 +1,80 @@
+server {
+    listen       80;
+    server_name  localhost;
+
+    charset utf-8;
+
+    root   /var/www/html/public;
+    index  index.php;
+
+    #rewrite ^/(.*)/$ /$1 permanent;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location /themes {
+        internal;
+        alias /home/www/legacy/themes;
+    }
+
+    location /image_cache {
+        internal;
+        alias /home/www/var/glide/cache;
+    }
+
+    error_page 403 errors/403.html;
+    error_page 404 errors/404.html;
+    error_page 408 errors/408.html;
+    error_page 500 errors/500.html;
+    error_page 502 errors/502.html;
+    error_page 503 errors/503.html;
+    error_page 504 errors/504.html;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt { access_log off; log_not_found off; }
+
+    #access_log off;
+    access_log /home/www/var/log/nginx.log;
+    error_log  /home/www/var/log/nginx-error.log error;
+
+    location ~ \.php$ {
+        try_files $uri /index.php =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        #fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+        fastcgi_pass fpm:9000;
+        fastcgi_index index.php;
+
+        #https://github.com/zendtech/ZendOptimizerPlus/issues/126
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+
+        include fastcgi_params;
+        fastcgi_intercept_errors off;
+        fastcgi_buffer_size 32k;
+        fastcgi_buffers 16 16k;
+    }
+
+    location ~ (/\.|web\.config) {
+        deny all;
+
+        access_log off;
+        log_not_found off;
+    }
+
+#    # specjalne ustawienia dla testu Google PageSpeed, ustawić TYLKO jeżeli jest na to konkretne zlecenie
+#    location ~* \.(?:jpg|gif|png|ico|cur|svg|svgz)$ {
+#        expires 7d;
+#        add_header Cache-Control "public";
+#    }
+
+#    # cache dla plików statycznych, tylko gdy serwis NIE korzysta z dedykowanego serwera Cache/CDN
+#    location ^~ /var/cache {
+#        expires 14d;
+#        add_header Cache-Control "public";
+#    }
+#    location ~* \.(?:css|js|ttf|woff|woff2)$ {
+#        expires 31d;
+#        add_header Cache-Control "public";
+#    }
+}
