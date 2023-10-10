@@ -12,10 +12,11 @@ return (new PhpCsFixer\Config())
         '@PhpCsFixer'                        => true,
         'object_operator_without_whitespace' => true,
         'binary_operator_spaces'             => ['operators' => [
-            '='  => 'align_single_space_minimal_by_scope',
-            '=>' => 'align_single_space_minimal_by_scope',
+            '='  => 'align_single_space_minimal',
+            '=>' => 'align_single_space_minimal',
         ]],
         'not_operator_with_successor_space'  => true,
+        'php_unit_method_casing'             => ['case' => 'snake_case'],
     ])
     ->setFinder($finder)
 ;
